@@ -21,8 +21,8 @@ public class UserServiceTests {
     public void reg(){
         try {
             User user = new User();
-            user.setUsername("小宇是傻逼123");
-            user.setPassword("1234");
+            user.setUsername("test009");
+            user.setPassword("123456");
             userService.reg(user);
             System.out.println("OK");
         } catch (ServiceException e) {
@@ -31,5 +31,33 @@ public class UserServiceTests {
             //获取异常的具体描述信息
             System.out.println(e.getMessage());
         }
+    }
+
+    @Test
+    public void login(){
+        User user = userService.login("Test001", "1234");
+        System.out.println(user);
+    }
+
+    @Test
+    public void update(){
+        userService.update(22,"管理员","288100","345678");
+    }
+
+
+    @Test
+    public void getById(){
+        System.out.println(userService.getByUid(22));;
+    }
+
+
+    @Test
+    public void changeInfo(){
+        User user = new User();
+        user.setPhone("123456789");
+        user.setEmail("288100@qq.com");
+        user.setGender(0);
+        userService.changeInfo(22,"管理员",user);
+
     }
 }

@@ -1,7 +1,7 @@
 package com.cy.store.service.ex;
 
 //业务层基层的基类
-public class ServiceException extends RuntimeException{
+public class ServiceException extends RuntimeException {
 
     public ServiceException() {
         super();

@@ -144,7 +144,7 @@
 				$.ajax({
 					url: "/users/reg",
 					type: "POST",
-					data: $("#from-reg").serialize(),
+					data: $("#form-reg").serialize(),
 					dataType: "JSON",
 					success: function (json) {
 						if (json.state == 200) {
