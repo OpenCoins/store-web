@@ -1,5 +1,9 @@
 package com.cy.store.controller;
 
+import com.cy.store.controller.ex.FileEmptyException;
+import com.cy.store.controller.ex.FileSizeException;
+import com.cy.store.controller.ex.FileTypeException;
+import com.cy.store.controller.ex.FileUploadException;
 import com.cy.store.entity.User;
 import com.cy.store.service.UserService;
 import com.cy.store.service.ex.InsertException;
@@ -10,8 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
@@ -73,6 +80,7 @@ public class UserController extends BaseController{
         AVATAR_TYPE.add("image/png");
         AVATAR_TYPE.add("image/bmp");
         AVATAR_TYPE.add("image/gif");
+        AVATAR_TYPE.add("image/jpg");
     }
 
     /**
@@ -83,6 +91,46 @@ public class UserController extends BaseController{
      */
     @RequestMapping("/chang_avatar")
     public JsonResult<String> changAvatar(HttpSession session,@RequestParam("file") MultipartFile file){
+        //判断文件是否为null
+        if (file.isEmpty()){
+            throw new FileEmptyException("文件为空");
+        }
+        if (file.getSize()>AVATAR_MAX_SIZE){
+            throw new FileSizeException("文件超出范围限制");
+        }
+        //判断文件的类型是否是我们规定的后缀类型
+        String contentType = file.getContentType();
+        //如果包含集合中的某个元素，返回ture
+        if (!AVATAR_TYPE.contains(contentType)){
+            throw new FileTypeException("文件类型不一样");
+        }
+        //上传的文件.../upload/文件。png
+        String realPath = session.getServletContext().getRealPath("/upload");
+        //file对象指向这个路径，file是否存在
+        File dir = new File(realPath);
+        if (!dir.exists()){  //检测目录是否存
+            dir.mkdirs();  //如果不存在，创建当前的目录
+        }
+        //获取到这个文件的名称，用uuid工具来生成一个新的字符串作为文件名
+        String originalFilename = file.getOriginalFilename();
+        int index = originalFilename.lastIndexOf(".");
+        String substring = originalFilename.substring(index);
+        String filename = UUID.randomUUID().toString().toUpperCase() + substring;
+        //生成一个空文件
+        File dest = new File(dir,filename);
 
+        //将参数file中的数据写入到这个空文件中
+        try {
+            file.transferTo(dest);
+        } catch (IOException e) {
+            throw new FileUploadException("文件读写异常");
+        }
+
+        Integer uid = getuidFromSession(session);
+        String username = getUsernameFromSession(session);
+        String avatar = "/upload/" + filename;
+        userService.changAvatarByUid(uid,avatar,username);
+        //返回用户头像的路径给前端页面，将来给前端做展示使用
+        return new JsonResult<>(OK,avatar);
     }
 }

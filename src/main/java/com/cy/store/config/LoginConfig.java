@@ -30,6 +30,7 @@ public class LoginConfig implements WebMvcConfigurer {
         patterns.add("/web/product.html");
         patterns.add("/users/reg");
         patterns.add("/users/login");
+        patterns.add("/district/**");
         //完成拦截器的注册
         registry.addInterceptor(interceptor)
                 .addPathPatterns("/**")
